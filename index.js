@@ -4,27 +4,41 @@ const axios = require('axios')
 const tmp = require('tmp');
 const fs = require('fs')
 const path = require('path')
+const spinner = require('ora')()
 
 const { 
-  appid = '', 
+  appid = '', // wxd4fbd20ed01fb516
   version = '1.0.0',
   type = 'miniProgram', // 默认微信小程序
-  dist = 'dist/build/mp-weixin' // 构建生成的文件存放目录
+  dist = 'dist/build/mp-weixin', // 构建生成的文件存放目录
+  token = ''
 } = yParser(process.argv.slice(2));
 
-if (!appid) {
-  throw new Error('---------- appid不能为空 ----------')
+if (!appid || !token) {
+  spinner.fail(`appid 和 token 不能为空`)
+  return;
 }
 
 ;(async () => {
   try {
-    console.log('---------- 正在获取小程序信息 ----------')
-    const { data } = await axios.post('/xxx', { appid })
+    spinner.start('获取小程序信息...\n')
+    const { data: { data } = {} } = await axios({ 
+      url: 'http://192.168.2.13:18089/api/miniapp/config/queryByAppId',
+      headers: { token },
+      params: { appId: appid }
+    })
     const tmpFilePath = tmp.fileSync().name;
-    fs.writeFileSync(tmpFilePath, data.privateKey)
+    fs.writeFileSync(tmpFilePath, data.uploadSecret) // 写入临时文件中
 
-    console.log('---------- 小程序开始发布 ----------')
+    spinner.start('小程序发布中...\n')
     const projectPath = path.resolve(__dirname, `../${dist}`)
+    const configPath = path.join(projectPath, 'project.config.json')
+    const isConfigExists = fs.existsSync(configPath)
+    let projectConfigSetting = { es6: true }
+
+    if (isConfigExists) {
+      projectConfigSetting = require(configPath).setting || projectConfigSetting
+    }
 
     const project = new ci.Project({
       appid,
@@ -37,15 +51,12 @@ if (!appid) {
       project,
       version,
       desc: '自动化发布',
-      setting: {
-        es6: true,
-      },
-      onProgressUpdate: console.log,
+      setting: projectConfigSetting,
       robot: 1
     })
-    console.log(uploadResult)
+    spinner.succeed('发布成功')
   } catch(err) {
-    console.log('---------- 发布失败 ----------')
+    spinner.fail(`发布失败`)
     console.log(err)
   }
 })()
