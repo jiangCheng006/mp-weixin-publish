@@ -23,7 +23,7 @@ if (!appid || !token) {
   try {
     spinner.start('获取小程序信息...\n')
     const { data: { data } = {} } = await axios({ 
-      url: 'http://192.168.2.13:18089/api/miniapp/config/queryByAppId',
+      url: 'http://fed.lishicloud.com/api/miniapp/config/queryByAppId',
       headers: { token },
       params: { appId: appid }
     })
