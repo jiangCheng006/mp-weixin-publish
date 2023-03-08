@@ -7,7 +7,7 @@ const path = require('path')
 const spinner = require('ora')()
 
 const { 
-  appid = '', // wxd4fbd20ed01fb516
+  appid = '', 
   version = '1.0.0',
   type = 'miniProgram', // 默认微信小程序
   dist = 'dist/build/mp-weixin', // 构建生成的文件存放目录
