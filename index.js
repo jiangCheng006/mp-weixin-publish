@@ -6,9 +6,11 @@ const fs = require('fs')
 const path = require('path')
 const spinner = require('ora')()
 
-const { 
-  appid = '', 
-  version = '1.0.0',
+const package = require('../pacakge.json')
+
+const {
+  appid = '',
+  version = package.version,
   type = 'miniProgram', // 默认微信小程序
   dist = 'dist/build/mp-weixin', // 构建生成的文件存放目录
   token = ''
@@ -22,7 +24,7 @@ if (!appid || !token) {
 ;(async () => {
   try {
     spinner.start('获取小程序信息...\n')
-    const { data: { data } = {} } = await axios({ 
+    const { data: { data } = {} } = await axios({
       url: 'http://fed.lishicloud.com/api/miniapp/config/queryByAppId',
       headers: { token },
       params: { appId: appid }
