@@ -9,11 +9,11 @@ const spinner = require('ora')()
 const package = require('../package.json')
 
 const {
-  appid = '',
+  appid = '', 
+  token = '',
   version = package.version,
   type = 'miniProgram', // 默认微信小程序
   dist = 'dist/build/mp-weixin', // 构建生成的文件存放目录
-  token = ''
 } = yParser(process.argv.slice(2));
 
 if (!appid || !token) {
@@ -29,31 +29,36 @@ if (!appid || !token) {
       headers: { token },
       params: { appId: appid }
     })
-    const tmpFilePath = tmp.fileSync().name;
+    const tmpFilePath = tmp.fileSync({ mode: 0o644, postfix: '.key' }).name;
     fs.writeFileSync(tmpFilePath, data.uploadSecret) // 写入临时文件中
 
     spinner.start('小程序发布中...\n')
     const projectPath = path.resolve(__dirname, `../${dist}`)
-    const configPath = path.join(projectPath, 'project.config.json')
-    const isConfigExists = fs.existsSync(configPath)
-    let projectConfigSetting = { es6: true }
-
-    if (isConfigExists) {
-      projectConfigSetting = require(configPath).setting || projectConfigSetting
+    
+    let projectConfigSetting = {
+      es7: false,
+      minify: false,
+      autoPrefixWXSS: false, 
     }
+    // const configPath = path.join(projectPath, 'project.config.json')
+    // const isConfigExists = fs.existsSync(configPath)
+    // if (isConfigExists) {
+    //   projectConfigSetting = require(configPath).setting || projectConfigSetting
+    // }
 
     const project = new ci.Project({
       appid,
       type,
       projectPath,
       privateKeyPath: tmpFilePath,
-      // ignores: ['node_modules/**/*'],
+      ignores: ['node_modules/**/*'],
     })
     const uploadResult = await ci.upload({
       project,
       version,
       desc: '自动化发布',
       setting: projectConfigSetting,
+      onProgressUpdate: () => {},
       robot: 1
     })
     spinner.succeed('发布成功')
