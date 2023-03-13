@@ -6,7 +6,7 @@ const fs = require('fs')
 const path = require('path')
 const spinner = require('ora')()
 
-const package = require('../pacakge.json')
+const package = require('../package.json')
 
 const {
   appid = '',
