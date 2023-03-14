@@ -64,6 +64,8 @@ if (!appid || !token) {
     spinner.succeed('发布成功')
   } catch(err) {
     spinner.fail(`发布失败`)
-    throw new Error(err)
+    console.log(err)
+    process.exit(-1)
+
   }
 })()
